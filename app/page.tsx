@@ -1,27 +1,31 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ThreeCanvas } from '@/features/canvas/components/ThreeCanvas';
-import { PromptForm } from '@/features/generator/components/PromptForm';
+import { useState } from "react";
+import { ThreeCanvas } from "@/features/canvas/components/ThreeCanvas";
+import { PromptForm } from "@/features/generator/components/PromptForm";
+import { generate3dModel } from "@/features/generator/services/generatorService";
 
-const DUCK_URL = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/glTF-Binary/Duck.glb';
-const HELMET_URL = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb';
+const DUCK_URL =
+  "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/glTF-Binary/Duck.glb";
+const HELMET_URL =
+  "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb";
 
 export default function Home() {
-  const [modelUrl, setModelUrl] = useState(DUCK_URL);
+  const [modelUrl, setModelUrl] = useState(HELMET_URL);
   const [isLoading, setIsLoading] = useState(false);
 
-  // شبیه‌سازی رفتار هوش مصنوعی برای تست اولیه
-  const handleGenerate = (userPrompt: string) => {
+  const handleGenerate = async (userPrompt: string) => {
     setIsLoading(true);
-    console.log('پرامپت دریافت شد:', userPrompt);
 
-    // شبیه‌سازی تاخیر ۳ ثانیه‌ای API
-    setTimeout(() => {
-      // سوئیچ بین دو مدل جهت تست تعویض دینامیک
-      setModelUrl((prev) => (prev === DUCK_URL ? HELMET_URL : DUCK_URL));
+    try {
+      const res = await generate3dModel(userPrompt);
+      console.log(res)
+      setModelUrl(res);
+    } catch (error) {
+      console.log(error);
+    } finally {
       setIsLoading(false);
-    }, 3000);
+    }
   };
 
   return (
