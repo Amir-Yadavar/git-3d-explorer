@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌐 Git3D Explorer (CodeGraph 3D)
 
-## Getting Started
+An interactive, AI-powered 3D visualizer for GitHub repository architectures and code dependencies using React Three Fiber, D3 Graph algorithms, and Gemini AI.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🎯 Project Purpose & Strategy
+This project addresses the difficulty of understanding complex codebases by rendering repository file trees and `import` dependencies as an interactive 3D force-directed graph. Users can navigate code visually, click on files to inspect their relationships, and ask AI questions about specific code units.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack & Architecture
+- **Framework:** Next.js (App Router) + TypeScript
+- **3D Rendering:** React Three Fiber (R3F) + `@react-three/drei` + Three.js
+- **Graph Layout:** `3d-force-graph` / `d3-force-3d`
+- **Data Source:** GitHub REST API
+- **AI Analysis:** Google Gemini API (`gemini-1.5-flash`)
+- **Styling:** Tailwind CSS + Lucide Icons
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🚀 Execution Roadmap & Checklist
 
-To learn more about Next.js, take a look at the following resources:
+- [ ] **Phase 1: Setup & Data Fetching**
+  - Implement GitHub API integration to fetch repo file trees (`app/api/github/route.ts`).
+  - Create simple parser to detect `import` and `require` connections between files.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [ ] **Phase 2: 3D Scene & Force-Directed Graph**
+  - Setup React Three Fiber canvas (`features/scene-3d`).
+  - Map files to 3D Nodes (color-coded by type: .tsx, .ts, .css) and imports to 3D Edges.
+  - Add OrbitControls and smooth camera targeting on node click.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [ ] **Phase 3: Interactive UI & AI Integration**
+  - Build HUD overlay (URL Input, Preset Repos, Selected File Sidebar).
+  - Connect Google Gemini API to explain selected code files in plain Persian/English.
+  - Implement contextual Q&A panel for selected nodes.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔧 Environment Variables (.env.local)
+```env
+GITHUB_TOKEN=your_optional_github_token
+GEMINI_API_KEY=your_gemini_api_key

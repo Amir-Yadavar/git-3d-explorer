@@ -1,5 +1,5 @@
 {
-  "name": "ai-3d-customizer",
+  "name": "git-3d-explorer",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,12 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@ai-sdk/google": "^4.0.23",
-    "@ai-sdk/groq": "^4.0.13",
-    "@ai-sdk/react": "^4.0.40",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.7.0",
-    "ai": "^7.0.37",
     "next": "16.2.11",
     "react": "19.2.4",
     "react-dom": "19.2.4",
