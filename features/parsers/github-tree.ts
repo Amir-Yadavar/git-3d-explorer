@@ -1,42 +1,51 @@
-const validExtensions = ["js", "jsx", "ts", "tsx", "css", "json", "md", "html"];
+import { GraphNode, GraphLink, RepoGraphData } from "@/types/graph";
 
-export default function processGitHubTree(tree: any[]) {
-  const nodes: any[] = [];
-  const links: any[] = [];
+export default function processGitHubTree(tree: any[]): RepoGraphData {
+  const nodes: GraphNode[] = [];
+  const links: GraphLink[] = [];
+  const addedPaths = new Set<string>();
 
-  if (!Array.isArray(tree)) {
-    return { nodes: [], links: [] };
-  }
-  tree.forEach((item) => {
-    if (item.type === "blob") {
-      const ext = item.path.split(".").pop() || "";
+  if (!Array.isArray(tree)) return { nodes: [], links: [] };
 
-      if (validExtensions.includes(ext)) {
-        nodes.push({
-          id: item.path,
-          name: item.path.split("/").pop(),
-          path: item.path,
-          extension: ext,
-          size: item.size,
-        });
-      }
-    }
+  nodes.push({
+    id: "root",
+    name: "Root",
+    path: "root",
+    extension: "folder",
+    size: 0,
   });
+  addedPaths.add("root");
 
-  nodes.forEach((node) => {
-    const parts = node.path.split("/");
-    if (parts.length > 1) {
-      const parentPath = parts.slice(0, -1).join("/");
-      const sibling = nodes.find(
-        (n) => n.path.startsWith(parentPath) && n.id !== node.id,
-      );
-      if (sibling) {
-        links.push({
-          source: node.id,
-          target: sibling.id,
+  tree.forEach((item) => {
+    const parts = item.path.split("/");
+    let currentPath = "";
+    let parentPath = "root";
+
+    parts.forEach((part: string, index: number) => {
+      const isFile = index === parts.length - 1 && item.type === "blob";
+      currentPath = currentPath ? `${currentPath}/${part}` : part;
+
+      if (!addedPaths.has(currentPath)) {
+        const ext = isFile ? part.split(".").pop() || "" : "folder";
+
+        nodes.push({
+          id: currentPath,
+          name: part,
+          path: currentPath,
+          extension: ext,
+          size: item.size || 0,
         });
+
+        links.push({
+          source: parentPath,
+          target: currentPath,
+        });
+
+        addedPaths.add(currentPath);
       }
-    }
+
+      parentPath = currentPath;
+    });
   });
 
   return { nodes, links };

@@ -1,5 +1,6 @@
 "use client";
 
+import ThreeCanvas from "@/features/canvas/scene-3d/ThreeCanvas";
 import { useState } from "react";
 
 export default function TestPage() {
@@ -23,6 +24,10 @@ export default function TestPage() {
       >
         تست API دریافت ریپوی Zustand
       </button>
+      <div className="w-full h-[600px]">
+
+      <ThreeCanvas data={result}/>
+      </div>
 
       {result && (
         <pre className="mt-4 p-4 bg-black rounded text-green-400 text-xs overflow-auto max-h-[500px]">
