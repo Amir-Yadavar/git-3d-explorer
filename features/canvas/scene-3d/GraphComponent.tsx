@@ -8,7 +8,6 @@ import SpriteText from "three-spritetext";
 import getFileIconDetails from "@/features/parsers/getFileIconDetails";
 import { CameraControls } from "@react-three/drei";
 
-// 👈 ۱. گسترش تایپ THREE.Group برای تعریف __data
 interface CustomGroup extends THREE.Group {
   __data?: any;
 }
@@ -63,7 +62,6 @@ export default function GraphComponent({
 
         group.add(sprite);
 
-        // 👈 ۲. حالا بدون ارور تایپ‌اسکریپت ذخیره می‌شود
         group.__data = node;
 
         return group;
@@ -76,7 +74,6 @@ export default function GraphComponent({
     let currentObject: CustomGroup | null = event.object;
     let nodeData = currentObject?.__data;
 
-    // پیمایش به سمت بالای درخت Three.js برای یافتن __data
     while (currentObject && !nodeData) {
       currentObject = currentObject.parent as CustomGroup | null;
       if (currentObject) {
