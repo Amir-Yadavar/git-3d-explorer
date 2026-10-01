@@ -2,7 +2,7 @@
 import { CameraControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const GraphComponent = dynamic(() => import("./GraphComponent"), {
   ssr: false,
@@ -25,6 +25,8 @@ interface ThreeCanvasProps {
 }
 
 export default function ThreeCanvas({ data }: ThreeCanvasProps) {
+const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+
   const cameraControlsRef = useRef<CameraControls>(null);
 
   // useEffect(()=>{
@@ -34,6 +36,7 @@ export default function ThreeCanvas({ data }: ThreeCanvasProps) {
   const sceneClickHandler = () => {
     // cameraControlsRef.current?.reset(true);
     cameraControlsRef.current?.setLookAt(0, 0, 500,0,0,0,true)
+    setSelectedNodeId(null)
   };
 
   return (
@@ -44,7 +47,8 @@ export default function ThreeCanvas({ data }: ThreeCanvasProps) {
       <CameraControls ref={cameraControlsRef} makeDefault />
       <ambientLight />
 
-      <GraphComponent data={data} cameraControlsRef={cameraControlsRef} />
+      <GraphComponent data={data} cameraControlsRef={cameraControlsRef} selectedNodeId={selectedNodeId}
+      onSelectNode={setSelectedNodeId}/>
     </Canvas>
   );
 }

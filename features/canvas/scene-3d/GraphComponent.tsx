@@ -2,7 +2,7 @@
 
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { RefObject, useEffect, useMemo } from "react";
+import { RefObject, useEffect, useMemo, useState } from "react";
 import ThreeForceGraph from "three-forcegraph";
 import SpriteText from "three-spritetext";
 import getFileIconDetails from "@/features/parsers/getFileIconDetails";
@@ -15,11 +15,15 @@ interface CustomGroup extends THREE.Group {
 interface GraphComponentProps {
   data: any;
   cameraControlsRef: RefObject<CameraControls | null>;
+  selectedNodeId: string | null;
+  onSelectNode: (id: string | null) => void;
 }
 
 export default function GraphComponent({
   data,
   cameraControlsRef,
+  selectedNodeId,
+  onSelectNode,
 }: GraphComponentProps) {
   const graphInstance = useMemo(() => {
     return new ThreeForceGraph();
@@ -59,6 +63,8 @@ export default function GraphComponent({
         sprite.padding = 1;
         sprite.backgroundColor = "rgba(15, 23, 42, 0.75)";
         sprite.borderRadius = 2;
+        const isSelected = selectedNodeId === node.id;
+        const isNothingSelected = selectedNodeId === null;
 
         group.add(sprite);
 
@@ -67,6 +73,27 @@ export default function GraphComponent({
         return group;
       });
   }, [data, graphInstance]);
+
+  useEffect(() => {
+    if (!graphInstance) return;
+
+    // تمام اشیاء داخل صحنه گراف رو پیمایش می‌کنیم
+    graphInstance.children.forEach((child: any) => {
+      // اطلاعات نود که قبلاً روی object ست کرده بودیم (__data)
+      const nodeData = child.__data;
+      if (!nodeData) return;
+
+      const isSelected = selectedNodeId === nodeData.id;
+      const isNothingSelected = selectedNodeId === null;
+
+      // پیدا کردن SpriteText داخل Group
+      const sprite = child.children?.[0];
+      if (sprite && sprite.material) {
+        // تغییر مستقیم شفافیت بدون Re-mount
+        sprite.material.opacity = isNothingSelected || isSelected ? 1 : 0.15;
+      }
+    });
+  }, [selectedNodeId, graphInstance]);
 
   const handleNodeClick = (event: any) => {
     event.stopPropagation();
@@ -81,7 +108,14 @@ export default function GraphComponent({
       }
     }
 
+    //  if click on line graph not anything---
+    if (!nodeData || !nodeData.id || nodeData.source) {
+      return;
+    }
+    //  if click on line graph not anything---
+
     if (nodeData && cameraControlsRef.current) {
+      onSelectNode(nodeData.id);
       const x = nodeData.x || 0;
       const y = nodeData.y || 0;
       const z = nodeData.z || 0;
@@ -89,19 +123,17 @@ export default function GraphComponent({
 
       cameraControlsRef.current.setLookAt(
         x,
-        y,
+        y + 50,
         z + distance,
         x,
         y,
         z,
-        true
+        true,
       );
     }
   };
 
   if (!data) return null;
 
-  return (
-    <primitive object={graphInstance} onClick={handleNodeClick} />
-  );
+  return <primitive object={graphInstance} onClick={handleNodeClick} />;
 }
