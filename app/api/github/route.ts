@@ -7,35 +7,33 @@ export async function POST(req: NextRequest) {
     const { owner, repo, branch = "main" } = body || {};
 
     if (!owner || !repo) {
-      return NextResponse.json({
-        error: "owner or repo is required ..",
-      });
+      return NextResponse.json(
+        { error: "owner and repo are required" },
+        { status: 400 }
+      );
     }
 
-    // github url
-    const githubUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+    // تنظیم هدرهای مشترک جهت ارسال توکن و مشخصات کلاینت
+    const headers: Record<string, string> = {
+      Accept: "application/vnd.github.v3+json",
+      "User-Agent": "Git3D-Explorer",
+      ...(process.env.GITHUB_TOKEN && {
+        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      }),
+    };
 
-    const res = await fetch(githubUrl, {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-        "User-Agent": "Git3D-Explorer",
-        ...(process.env.GITHUB_TOKEN && {
-          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-        }),
-      },
-    });
+    // درخواست اول
+    let githubUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+    let res = await fetch(githubUrl, { headers });
+
+    // اگر branch اصلی پیدا نشد و main بود، تلاش مجدد روی branch موسوم به master
+    if (!res.ok && branch === "main") {
+      const fallbackUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/master?recursive=1`;
+      res = await fetch(fallbackUrl, { headers });
+    }
 
     if (!res.ok) {
-      if (branch === "main") {
-        const fallbackRes = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/git/trees/master?recursive=1`,
-        );
-        if (fallbackRes.ok) {
-          const fallbackData = await fallbackRes.json();
-          return processGitHubTree(fallbackData.tree);
-        }
-      }
-      throw new Error(`error for get info from github ..: ${res.statusText}`);
+      throw new Error(`Failed to fetch repo info from GitHub: ${res.statusText}`);
     }
 
     const data = await res.json();
@@ -43,10 +41,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(graphData);
   } catch (error: any) {
-    console.log("Github Api error : ", error);
-    return NextResponse.json({
-      status: 500,
-      error: error.message || "error in proccess repo ..",
-    });
+    console.error("Github Api Error:", error);
+    return NextResponse.json(
+      { error: error.message || "Error processing repository" },
+      { status: 500 }
+    );
   }
 }
