@@ -19,6 +19,9 @@ export default function Git3D() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   const fetchRepoFromUrl = async (owner: string, repo: string) => {
     setIsLoading(true);
     try {
@@ -37,10 +40,40 @@ export default function Git3D() {
     }
   };
 
-  const handleNodeSelect = (filePath: string) => {
+  const handleNodeSelect = async (filePath: string) => {
+    console.log(filePath)
     setSelectedFile(filePath);
+    setAiAnalysis(null);
     if (!isPanelOpen) {
       setIsPanelOpen(true);
+    }
+    if (repoUrlInput) {
+      const repoInfo = parseGithubUrl(repoUrlInput);
+      if (repoInfo) {
+        setIsAnalyzing(true);
+        try {
+          const res = await fetch("/api/ai/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              owner: repoInfo.owner,
+              repo: repoInfo.repo,
+              filePath: filePath,
+            }),
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            setAiAnalysis(data.analysis);
+          } else {
+            setAiAnalysis(`خطا: ${data.error}`);
+          }
+        } catch (err) {
+          setAiAnalysis("خطا در برقراری ارتباط با API تحلیل.");
+        } finally {
+          setIsAnalyzing(false);
+        }
+      }
     }
   };
 
@@ -165,14 +198,20 @@ export default function Git3D() {
 
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-3 rounded-lg border border-dashed border-slate-800/80 bg-slate-900/30">
                   {selectedFile ? (
-                    <div className="text-xs text-slate-300 space-y-1">
-                      <p className="font-semibold text-indigo-400">
-                        Analyzing file...
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        Parsing AST and generating summary.
-                      </p>
-                    </div>
+                    isAnalyzing ? (
+                      <div className="text-xs text-slate-300 space-y-1">
+                        <p className="font-semibold text-indigo-400">
+                          Analyzing file...
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          Parsing AST and generating summary.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-slate-300 space-y-2 whitespace-pre-line text-right dir-rtl leading-relaxed">
+                        {aiAnalysis || "can not find analyze .."}
+                      </div>
+                    )
                   ) : (
                     <div className="space-y-1">
                       <p className="text-xs text-slate-400 font-medium">
